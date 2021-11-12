@@ -3,16 +3,22 @@ package main;
 import checker.Checkstyle;
 import checker.Checker;
 import common.Constants;
+import execute_actions.executeActions;
+import fileio.ActionInputData;
 import fileio.Input;
 import fileio.InputLoader;
 import fileio.Writer;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -71,6 +77,7 @@ public final class Main {
         JSONArray arrayResult = new JSONArray();
 
         //TODO add here the entry point to your implementation
+        executeActions.run(input, arrayResult, fileWriter);
 
         fileWriter.closeJSON(arrayResult);
     }
