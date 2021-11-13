@@ -1,13 +1,14 @@
 package action;
 
 import common.Constants;
-import fileio.ActionInputData;
-import fileio.Input;
-import fileio.UserInputData;
-import fileio.Writer;
+import entertainment.MovieRating;
+import fileio.*;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public final class command {
 
@@ -50,10 +51,24 @@ public final class command {
 
     public static String rating(Input input, ActionInputData action) {
         String msg = new String();
+        MovieRating rating = null;
         for (UserInputData user : input.getUsers()) {
             if (user.getUsername().equals(action.getUsername())) {
                 if (user.getHistory().containsKey(action.getTitle())) {
+                    if (action.getSeasonNumber() != 0) {
 
+                        for (SerialInputData show : input.getSerials())
+                            if (show.getTitle().equals(action.getTitle())) {
+                                show.getSeasons().get(action.getSeasonNumber() - 1).getRatings().add(action.getGrade());
+                                msg = "success -> " + action.getTitle() + " was rated with " + action.getGrade() + " by " + action.getUsername();
+                            }
+                    } else {
+                        rating.getRatings().putIfAbsent(action.getTitle(),new ArrayList<Double>());
+                        ArrayList<Double> list = rating.getRatings().get(action.getTitle());
+                        list.add(action.getGrade());
+                        rating.getRatings().put(action.getTitle(), list);
+                        msg = "success -> " + action.getTitle() + " was rated with " + action.getGrade() + " by " + action.getUsername();
+                    }
                 } else {
                     //error not seen
                     msg = "error -> " + action.getTitle() + " is not seen";
@@ -75,6 +90,7 @@ public final class command {
                 break;
             }
             case "rating": {
+                msg = rating(input, action);
                 break;
             }
         }
