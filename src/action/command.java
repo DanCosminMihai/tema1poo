@@ -55,22 +55,29 @@ public final class command {
 
         for (Users user : db.getUsers()) {
             if (user.getUsername().equals(action.getUsername())) {
-                if (db.isMovie(action.getTitle())) {
-                    if (!db.getMovie(action.getTitle()).getRatings().containsKey(action.getUsername())) {
-                        msg = "success -> " + action.getTitle() + " was rated with " + action.getGrade() + " by " + action.getUsername();
-                        db.getMovie(action.getTitle()).getRatings().put(action.getUsername(), action.getGrade());
-                    } else
-                        msg = "error -> " + action.getTitle() + " has already been rated";
+                if (user.getHistory().containsKey(action.getTitle())) {
+                    if (db.isMovie(action.getTitle())) {
+                        if (!db.getMovie(action.getTitle()).getRatings().containsKey(action.getUsername())) {
+                            msg = "success -> " + action.getTitle() + " was rated with " + action.getGrade() + " by " + action.getUsername();
+                            db.getMovie(action.getTitle()).getRatings().put(action.getUsername(), action.getGrade());
+                            user.setNumberOfRatings(user.getNumberOfRatings() + 1);
+                        } else
+                            msg = "error -> " + action.getTitle() + " has already been rated";
+                    } else {
+                        if (!db.getShow(action.getTitle()).getSeasons().get(action.getSeasonNumber() - 1).getRatings().containsKey(action.getUsername())) {
+                            msg = "success -> " + action.getTitle() + " was rated with " + action.getGrade() + " by " + action.getUsername();
+                            user.setNumberOfRatings(user.getNumberOfRatings() + 1);
+                            db.getShow(action.getTitle()).getSeasons().get(action.getSeasonNumber() - 1).getRatings().put(action.getUsername(), action.getGrade());
+                        } else
+                            msg = "error -> " + action.getTitle() + " has already been rated";
+                    }
                 } else {
-                    if (!db.getShow(action.getTitle()).getSeasons().get(action.getSeasonNumber() - 1).getRatings().containsKey(action.getUsername())) {
-                        msg = "success -> " + action.getTitle() + " was rated with " + action.getGrade() + " by " + action.getUsername();
-                        db.getShow(action.getTitle()).getSeasons().get(action.getSeasonNumber() - 1).getRatings().put(action.getUsername(), action.getGrade());
-                    } else
-                        msg = "error -> " + action.getTitle() + " has already been rated";
+                    msg = "error -> " + action.getTitle() + " is not seen";
                 }
             }
         }
         return msg;
+
     }
 
 

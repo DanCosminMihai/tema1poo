@@ -1,6 +1,7 @@
 package execute_actions;
 
 import action.command;
+import action.query;
 import database.DB;
 import fileio.*;
 import org.json.simple.JSONArray;
@@ -21,6 +22,7 @@ public final class executeActions {
                     break;
                 }
                 case "query": {
+                    arrayResult.add(query.execute(action, db, writer));
                     break;
                 }
                 case "recommendation": {
