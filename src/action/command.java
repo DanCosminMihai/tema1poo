@@ -1,20 +1,18 @@
 package action;
 
-import common.Constants;
+import database.DB;
+import database.Users;
 import entertainment.MovieRating;
 import fileio.*;
-import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 public final class command {
 
-    public static String favorite(Input input, ActionInputData action) {
+    public static String favorite(DB db, ActionInputData action) {
         String msg = new String();
-        for (UserInputData user : input.getUsers()) {
+        for (Users user : db.getUsers()) {
             if (user.getUsername().equals(action.getUsername())) {
                 if (user.getHistory().containsKey(action.getTitle())) {
                     if (!user.getFavoriteMovies().contains(action.getTitle())) {
@@ -29,14 +27,16 @@ public final class command {
                     //error not seen
                     msg = "error -> " + action.getTitle() + " is not seen";
                 }
+                return msg;
             }
         }
         return msg;
+
     }
 
-    public static String view(Input input, ActionInputData action) {
+    public static String view(DB db, ActionInputData action) {
         String msg = new String();
-        for (UserInputData user : input.getUsers()) {
+        for (Users user : db.getUsers()) {
             if (user.getUsername().equals(action.getUsername())) {
                 if (user.getHistory().containsKey(action.getTitle()))
                     user.getHistory().put(action.getTitle(), user.getHistory().get(action.getTitle() + 1));
@@ -45,52 +45,48 @@ public final class command {
                 msg = "success -> " + action.getTitle() + " was viewed with total views of " + user.getHistory().get(action.getTitle());
 
             }
+            return msg;
         }
         return msg;
     }
 
-    public static String rating(Input input, ActionInputData action) {
+    public static String rating(DB db, ActionInputData action) {
         String msg = new String();
-        MovieRating rating = null;
-        for (UserInputData user : input.getUsers()) {
-            if (user.getUsername().equals(action.getUsername())) {
-                if (user.getHistory().containsKey(action.getTitle())) {
-                    if (action.getSeasonNumber() != 0) {
 
-                        for (SerialInputData show : input.getSerials())
-                            if (show.getTitle().equals(action.getTitle())) {
-                                show.getSeasons().get(action.getSeasonNumber() - 1).getRatings().add(action.getGrade());
-                                msg = "success -> " + action.getTitle() + " was rated with " + action.getGrade() + " by " + action.getUsername();
-                            }
-                    } else {
-                        rating.getRatings().putIfAbsent(action.getTitle(),new ArrayList<Double>());
-                        ArrayList<Double> list = rating.getRatings().get(action.getTitle());
-                        list.add(action.getGrade());
-                        rating.getRatings().put(action.getTitle(), list);
+        for (Users user : db.getUsers()) {
+            if (user.getUsername().equals(action.getUsername())) {
+                if (db.isMovie(action.getTitle())) {
+                    if (!db.getMovie(action.getTitle()).getRatings().containsKey(action.getUsername())) {
                         msg = "success -> " + action.getTitle() + " was rated with " + action.getGrade() + " by " + action.getUsername();
-                    }
+                        db.getMovie(action.getTitle()).getRatings().put(action.getUsername(), action.getGrade());
+                    } else
+                        msg = "error -> " + action.getTitle() + " has already been rated";
                 } else {
-                    //error not seen
-                    msg = "error -> " + action.getTitle() + " is not seen";
+                    if (!db.getShow(action.getTitle()).getSeasons().get(action.getSeasonNumber() - 1).getRatings().containsKey(action.getUsername())) {
+                        msg = "success -> " + action.getTitle() + " was rated with " + action.getGrade() + " by " + action.getUsername();
+                        db.getShow(action.getTitle()).getSeasons().get(action.getSeasonNumber() - 1).getRatings().put(action.getUsername(), action.getGrade());
+                    } else
+                        msg = "error -> " + action.getTitle() + " has already been rated";
                 }
             }
         }
         return msg;
     }
 
-    public static Object execute(ActionInputData action, Input input, Writer writer) throws IOException {
+
+    public static Object execute(ActionInputData action, DB db, Writer writer) throws IOException {
         String msg = new String();
         switch (action.getType()) {
             case "favorite": {
-                msg = favorite(input, action);
+                msg = favorite(db, action);
                 break;
             }
             case "view": {
-                msg = view(input, action);
+                msg = view(db, action);
                 break;
             }
             case "rating": {
-                msg = rating(input, action);
+                msg = rating(db, action);
                 break;
             }
         }
