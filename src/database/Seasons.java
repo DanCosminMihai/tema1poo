@@ -25,6 +25,15 @@ public class Seasons {
         this.ratings = new HashMap<>();
     }
 
+    public Double getAverageRating() {
+        if(ratings.isEmpty())
+            return 0.0;
+        Double sum = 0.0;
+        for(Double rating : ratings.values())
+            sum = sum + rating;
+        return sum /ratings.size();
+    }
+
     public int getCurrentSeason() {
         return currentSeason;
     }

@@ -32,9 +32,22 @@ public final class Actors {
         this.awards = awards;
     }
 
-    public Double AvgRating() {
-        //TODO
-        return 0.0;
+    public Double AvgRating(DB db) {
+        Double sum = 0.0;
+        int n = 0;
+        for (String video : this.filmography) {
+            if (db.isMovie(video) && db.getMovie(video).getAverageRating() != 0) {
+                sum = sum + db.getMovie(video).getAverageRating();
+                n++;
+            }
+            if (db.getShow(video) != null && db.getShow(video).getAverageRating() != 0) {
+                sum = sum + db.getShow(video).getAverageRating();
+                n++;
+            }
+        }
+        if (n == 0)
+            return 0.0;
+        return sum / n;
     }
 
     public String getName() {

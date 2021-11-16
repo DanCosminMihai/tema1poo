@@ -20,6 +20,13 @@ public class Shows extends Videos {
         this.seasons = seasons;
     }
 
+    public Double getAverageRating() {
+        Double sum = 0.0;
+        for(Seasons season : this.seasons)
+            sum = sum + season.getAverageRating();
+        return sum /this.numberOfSeasons;
+    }
+
     public int getNumberOfSeasons() {
         return numberOfSeasons;
     }
