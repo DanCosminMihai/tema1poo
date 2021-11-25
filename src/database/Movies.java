@@ -19,6 +19,8 @@ public class Movies extends Videos {
             sum = sum + rating;
         return sum / ratings.size();
     }
+
+
     public HashMap<String, Double> getRatings() {
         return ratings;
     }

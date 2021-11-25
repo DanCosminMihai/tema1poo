@@ -23,8 +23,8 @@ public class Videos {
     private int duration;
 
     public Videos(final String title, final int year,
-                     final ArrayList<String> cast, final ArrayList<String> genres,
-                        int duration) {
+                  final ArrayList<String> cast, final ArrayList<String> genres,
+                  int duration) {
         this.title = title;
         this.year = year;
         this.cast = cast;
@@ -32,6 +32,22 @@ public class Videos {
         this.duration = duration;
     }
 
+    public int getNumberOfFavorites(DB db) {
+        int nr = 0;
+        for (Users user : db.getUsers())
+            if (user.getFavoriteMovies().contains(this.title))
+                nr++;
+        return nr;
+    }
+
+    public int getViews(DB db) {
+        int nr = 0;
+        for (Users user : db.getUsers())
+            if (user.getHistory().containsKey(this.title))
+                if(user.getHistory().get(this.title) != null)
+                nr += user.getHistory().get(this.title);
+        return nr;
+    }
 
     public final String getTitle() {
         return title;
