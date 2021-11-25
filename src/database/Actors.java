@@ -4,6 +4,7 @@ import actor.ActorsAwards;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Actors {
     /**
@@ -48,6 +49,12 @@ public final class Actors {
         if (n == 0)
             return 0.0;
         return sum / n;
+    }
+
+    public int getAwardsNumber() {
+        AtomicInteger s = new AtomicInteger();
+        this.awards.forEach((k,v)-> s.addAndGet(v));
+        return s.get();
     }
 
     public String getName() {
