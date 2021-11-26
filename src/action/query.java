@@ -8,6 +8,7 @@ import fileio.Writer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public final class query {
@@ -41,14 +42,15 @@ public final class query {
                     l.sort((o1, o2) -> {
                         if (o2.AvgRating(db).compareTo(o1.AvgRating(db)) == 0)
                             return o1.getName().compareTo(o2.getName());
-                        return -o2.AvgRating(db).compareTo(o1.AvgRating(db));
+                        return o1.AvgRating(db).compareTo(o2.AvgRating(db));
                     });
                 else
-                    db.getActors().sort((o1, o2) -> {
+                    l.sort((o1, o2) -> {
                         if (o2.AvgRating(db).compareTo(o1.AvgRating(db)) == 0)
                             return o2.getName().compareTo(o1.getName());
-                        return -o2.AvgRating(db).compareTo(o1.AvgRating(db));
+                        return o2.AvgRating(db).compareTo(o1.AvgRating(db));
                     });
+
             }
             case "awards" -> {
                 action.getFilters().get(3).forEach((award) -> {
@@ -67,17 +69,16 @@ public final class query {
                             return a1.getName().compareTo(a2.getName());
                         return a1.getAwardsNumber() - a2.getAwardsNumber();
                     });
-
             }
             case "filter_description" -> {
-
                 action.getFilters().get(2).forEach((word) -> {
-                    l.removeIf((actor) -> !actor.getCareerDescription().contains(word));
+                    l.removeIf((actor) -> !actor.getCareerDescription().toLowerCase().contains(" " + word.toLowerCase() + " "));
                 });
                 if (action.getSortType().equals("asc"))
                     l.sort((a1, a2) -> a1.getName().compareTo(a2.getName()));
                 else
                     l.sort((a2, a1) -> a1.getName().compareTo(a2.getName()));
+
             }
         }
         return "Query result: " + (ArrayList<String>)
