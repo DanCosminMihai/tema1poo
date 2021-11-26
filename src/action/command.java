@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public final class command {
 
     public static String favorite(DB db, ActionInputData action) {
-        String msg = new String();
+        String msg = "";
         for (Users user : db.getUsers()) {
             if (user.getUsername().equals(action.getUsername())) {
                 if (user.getHistory().containsKey(action.getTitle())) {
@@ -27,7 +27,6 @@ public final class command {
                     //error not seen
                     msg = "error -> " + action.getTitle() + " is not seen";
                 }
-                return msg;
             }
         }
         return msg;
@@ -35,17 +34,15 @@ public final class command {
     }
 
     public static String view(DB db, ActionInputData action) {
-        String msg = new String();
+        String msg = "";
         for (Users user : db.getUsers()) {
             if (user.getUsername().equals(action.getUsername())) {
                 if (user.getHistory().containsKey(action.getTitle()))
-                    user.getHistory().put(action.getTitle(), user.getHistory().get(action.getTitle() + 1));
+                    user.getHistory().put(action.getTitle(), user.getHistory().get(action.getTitle()) + 1);
                 else
                     user.getHistory().put(action.getTitle(), 1);
                 msg = "success -> " + action.getTitle() + " was viewed with total views of " + user.getHistory().get(action.getTitle());
-
             }
-            return msg;
         }
         return msg;
     }
@@ -82,19 +79,16 @@ public final class command {
 
 
     public static Object execute(ActionInputData action, DB db, Writer writer) throws IOException {
-        String msg = new String();
+        String msg = "";
         switch (action.getType()) {
-            case "favorite": {
+            case "favorite" -> {
                 msg = favorite(db, action);
-                break;
             }
-            case "view": {
+            case "view" -> {
                 msg = view(db, action);
-                break;
             }
-            case "rating": {
-                msg = rating(db, action);
-                break;
+            case "rating" -> {
+                msg = rating(db, action);;
             }
         }
         return writer.writeFile(action.getActionId(), "", msg);

@@ -2,6 +2,7 @@ package execute_actions;
 
 import action.command;
 import action.query;
+import action.recommendation;
 import database.DB;
 import fileio.*;
 import org.json.simple.JSONArray;
@@ -17,16 +18,14 @@ public final class executeActions {
         DB db = new DB(input);
         for (ActionInputData action : input.getCommands()) {
             switch (action.getActionType()) {
-                case "command": {
+                case "command" -> {
                     arrayResult.add(command.execute(action, db, writer));
-                    break;
                 }
-                case "query": {
+                case "query" -> {
                     arrayResult.add(query.execute(action, db, writer));
-                    break;
                 }
-                case "recommendation": {
-                    break;
+                case "recommendation" -> {
+                    arrayResult.add(recommendation.execute(action, db, writer));
                 }
             }
         }

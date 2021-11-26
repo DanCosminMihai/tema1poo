@@ -92,4 +92,12 @@ public class DB {
                 return show;
         return null;
     }
+
+    public Users getUser(String name) {
+        for (Users user : this.users)
+            if (user.getUsername().equals(name))
+                return user;
+        return null;
+    }
+
 }
