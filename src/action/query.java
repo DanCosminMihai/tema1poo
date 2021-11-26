@@ -1,5 +1,6 @@
 package action;
 
+import actor.ActorsAwards;
 import database.*;
 import fileio.ActionInputData;
 import fileio.Writer;
@@ -15,9 +16,17 @@ public final class query {
         ArrayList<Users> l = new ArrayList<>(db.getUsers());
         l.removeIf((e) -> e.getNumberOfRatings() == 0);
         if (action.getSortType().equals("desc"))
-            l.sort((o1, o2) -> o2.getNumberOfRatings() - o1.getNumberOfRatings());
+            l.sort((o1, o2) -> {
+                if (o2.getNumberOfRatings() - o1.getNumberOfRatings() == 0)
+                    return o2.getUsername().compareTo(o1.getUsername());
+                return o2.getNumberOfRatings() - o1.getNumberOfRatings();
+            });
         else
-            l.sort((o2, o1) -> o2.getNumberOfRatings() - o1.getNumberOfRatings());
+            l.sort((o2, o1) -> {
+                if (o2.getNumberOfRatings() - o1.getNumberOfRatings() == 0)
+                    return o2.getUsername().compareTo(o1.getUsername());
+                return o2.getNumberOfRatings() - o1.getNumberOfRatings();
+            });
 
         return "Query result: " + (ArrayList<String>)
                 l.stream().map(Users::getUsername).limit(action.getNumber()).collect(Collectors.toList());
@@ -43,12 +52,21 @@ public final class query {
             }
             case "awards" -> {
                 action.getFilters().get(3).forEach((award) -> {
-                    l.removeIf((actor) -> !actor.getAwards().containsKey(award));
+                    l.removeIf((actor) -> !actor.getAwards().containsKey(ActorsAwards.valueOf(award)));
                 });
+
                 if (action.getSortType().equals("desc"))
-                    l.sort((a1, a2) -> a1.getAwardsNumber() - a2.getAwardsNumber());
+                    l.sort((a1, a2) -> {
+                        if (a2.getAwardsNumber() - a1.getAwardsNumber() == 0)
+                            return a2.getName().compareTo(a1.getName());
+                        return a2.getAwardsNumber() - a1.getAwardsNumber();
+                    });
                 else
-                    l.sort((a2, a1) -> a1.getAwardsNumber() - a2.getAwardsNumber());
+                    l.sort((a1, a2) -> {
+                        if (a2.getAwardsNumber() - a1.getAwardsNumber() == 0)
+                            return a1.getName().compareTo(a2.getName());
+                        return a1.getAwardsNumber() - a2.getAwardsNumber();
+                    });
 
             }
             case "filter_description" -> {
@@ -62,48 +80,60 @@ public final class query {
                     l.sort((a2, a1) -> a1.getName().compareTo(a2.getName()));
             }
         }
-        return  "Query result: " + (ArrayList<String>)
+        return "Query result: " + (ArrayList<String>)
                 l.stream().map(Actors::getName).limit(action.getNumber()).collect(Collectors.toList());
     }
 
     public static String movies(ActionInputData action, DB db) {
         ArrayList<Movies> l = new ArrayList<>(db.getMovies());
-        action.getFilters().get(0).forEach((year) -> {
-            if(year!=null)
-            l.removeIf((movie) -> movie.getYear() != Integer.parseInt(year));
-        });
-        action.getFilters().get(1).forEach((genre) -> {
-            l.removeIf((movie) -> !movie.getGenres().contains(genre));
-        });
-
+        if (!action.getFilters().get(0).isEmpty()) {
+            action.getFilters().get(0).forEach((year) -> {
+                if (year != null)
+                    l.removeIf((movie) -> movie.getYear() != Integer.parseInt(year));
+            });
+        }
+        if (!action.getFilters().get(1).isEmpty()) {
+            action.getFilters().get(1).forEach((genre) -> {
+                if (genre != null)
+                    l.removeIf((movie) -> !movie.getGenres().contains(genre));
+            });
+        }
         switch (action.getCriteria()) {
             case "ratings" -> {
                 l.removeIf((movie) -> movie.getAverageRating() == 0);
                 if (action.getSortType().equals("asc"))
-                    l.sort((m1,m2)->m1.getAverageRating().compareTo(m2.getAverageRating()));
+                    l.sort((m1, m2) -> m1.getAverageRating().compareTo(m2.getAverageRating()));
                 else
-                    l.sort((m2,m1)->m1.getAverageRating().compareTo(m2.getAverageRating()));
+                    l.sort((m2, m1) -> m1.getAverageRating().compareTo(m2.getAverageRating()));
             }
             case "favorite" -> {
-                l.removeIf((m)->m.getNumberOfFavorites(db) == 0);
+                l.removeIf((m) -> m.getNumberOfFavorites(db) == 0);
                 if (action.getSortType().equals("asc"))
-                        l.sort((m1,m2)->m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db));
+                    l.sort((m1, m2) -> {
+                        if (m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db) == 0)
+                            return m1.getTitle().compareTo(m2.getTitle());
+                        return m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db);
+                    });
                 else
-                    l.sort((m2,m1)->m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db));
+                    l.sort((m2, m1) -> {
+                        if (m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db) == 0)
+                            return m1.getTitle().compareTo(m2.getTitle());
+                        return m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db);
+                    });
 
             }
             case "longest" -> {
                 if (action.getSortType().equals("desc"))
-                    l.sort((m1,m2)->m2.getDuration() - m1.getDuration());
+                    l.sort((m1, m2) -> m2.getDuration() - m1.getDuration());
                 else
-                    l.sort((m1,m2)->m1.getDuration() - m2.getDuration());
+                    l.sort((m1, m2) -> m1.getDuration() - m2.getDuration());
             }
             case "most_viewed" -> {
-                l.removeIf((m)->m.getViews(db) == 0);
+                l.removeIf((m) -> m.getViews(db) == 0);
                 if (action.getSortType().equals("asc"))
-                    l.sort((m1,m2)->m1.getViews(db) - m2.getViews(db));
+                    l.sort((m1, m2) -> m1.getViews(db) - m2.getViews(db));
                 else
-                    l.sort((m2,m1)->m1.getViews(db) - m2.getViews(db));
+                    l.sort((m2, m1) -> m1.getViews(db) - m2.getViews(db));
 
             }
         }
@@ -114,42 +144,43 @@ public final class query {
 
     public static String shows(ActionInputData action, DB db) {
         ArrayList<Shows> l = new ArrayList<>(db.getShows());
-            action.getFilters().get(0).forEach((year) -> {
-                if(year!=null)
-                    l.removeIf((show) -> show.getYear() != Integer.parseInt(year));
-            });
+        action.getFilters().get(0).forEach((year) -> {
+            if (year != null)
+                l.removeIf((show) -> show.getYear() != Integer.parseInt(year));
+        });
         action.getFilters().get(1).forEach((genre) -> {
-            l.removeIf((show) -> !show.getGenres().contains(genre));
+            if (genre != null)
+                l.removeIf((show) -> !show.getGenres().contains(genre));
         });
 
         switch (action.getCriteria()) {
             case "ratings" -> {
                 l.removeIf((show) -> show.getAverageRating() == 0);
                 if (action.getSortType().equals("asc"))
-                    l.sort((m1,m2)->m1.getAverageRating().compareTo(m2.getAverageRating()));
+                    l.sort((m1, m2) -> m1.getAverageRating().compareTo(m2.getAverageRating()));
                 else
-                    l.sort((m2,m1)->m1.getAverageRating().compareTo(m2.getAverageRating()));
-                }
+                    l.sort((m2, m1) -> m1.getAverageRating().compareTo(m2.getAverageRating()));
+            }
             case "favorite" -> {
-                l.removeIf((s)->s.getNumberOfFavorites(db) == 0);
+                l.removeIf((s) -> s.getNumberOfFavorites(db) == 0);
                 if (action.getSortType().equals("asc"))
-                    l.sort((m1,m2)->m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db));
+                    l.sort((m1, m2) -> m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db));
                 else
-                    l.sort((m2,m1)->m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db));
+                    l.sort((m2, m1) -> m1.getNumberOfFavorites(db) - m2.getNumberOfFavorites(db));
 
             }
             case "longest" -> {
                 if (action.getSortType().equals("desc"))
-                    l.sort((m1,m2)->m2.getDuration() - m1.getDuration());
+                    l.sort((m1, m2) -> m2.getDuration() - m1.getDuration());
                 else
-                    l.sort((m1,m2)->m1.getDuration() - m2.getDuration());
+                    l.sort((m1, m2) -> m1.getDuration() - m2.getDuration());
             }
             case "most_viewed" -> {
-                l.removeIf((m)->m.getViews(db) == 0);
+                l.removeIf((m) -> m.getViews(db) == 0);
                 if (action.getSortType().equals("asc"))
-                    l.sort((m1,m2)->m1.getViews(db) - m2.getViews(db));
+                    l.sort((m1, m2) -> m1.getViews(db) - m2.getViews(db));
                 else
-                    l.sort((m2,m1)->m1.getViews(db) - m2.getViews(db));
+                    l.sort((m2, m1) -> m1.getViews(db) - m2.getViews(db));
 
             }
         }
