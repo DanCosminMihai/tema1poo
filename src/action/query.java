@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class query {
@@ -72,7 +74,11 @@ public final class query {
             }
             case "filter_description" -> {
                 action.getFilters().get(2).forEach((word) -> {
-                    l.removeIf((actor) -> !actor.getCareerDescription().toLowerCase().contains(" " + word.toLowerCase() + " "));
+                    l.removeIf((actor) -> {
+                        Pattern pattern = Pattern.compile("\\W" + word + "\\W", Pattern.CASE_INSENSITIVE);
+                        Matcher matcher = pattern.matcher(actor.getCareerDescription());
+                        return !matcher.find();
+                    });
                 });
                 if (action.getSortType().equals("asc"))
                     l.sort((a1, a2) -> a1.getName().compareTo(a2.getName()));
@@ -125,16 +131,32 @@ public final class query {
             }
             case "longest" -> {
                 if (action.getSortType().equals("desc"))
-                    l.sort((m1, m2) -> m2.getDuration() - m1.getDuration());
+                    l.sort((m1, m2) -> {
+                        if (m2.getDuration() - m1.getDuration() == 0)
+                            return m1.getTitle().compareTo(m2.getTitle());
+                        return m2.getDuration() - m1.getDuration();
+                    });
                 else
-                    l.sort((m1, m2) -> m1.getDuration() - m2.getDuration());
+                    l.sort((m1, m2) -> {
+                        if (m1.getDuration() - m2.getDuration() == 0)
+                            return m1.getTitle().compareTo(m2.getTitle());
+                        return m1.getDuration() - m2.getDuration();
+                    });
             }
             case "most_viewed" -> {
                 l.removeIf((m) -> m.getViews(db) == 0);
                 if (action.getSortType().equals("asc"))
-                    l.sort((m1, m2) -> m1.getViews(db) - m2.getViews(db));
+                    l.sort((m1, m2) -> {
+                        if (m1.getViews(db) - m2.getViews(db) == 0)
+                            return m1.getTitle().compareTo(m2.getTitle());
+                        return m1.getViews(db) - m2.getViews(db);
+                    });
                 else
-                    l.sort((m2, m1) -> m1.getViews(db) - m2.getViews(db));
+                    l.sort((m1, m2) -> {
+                        if (m2.getViews(db) - m1.getViews(db) == 0)
+                            return m2.getTitle().compareTo(m1.getTitle());
+                        return m2.getViews(db) - m1.getViews(db);
+                    });
 
             }
         }
@@ -179,9 +201,17 @@ public final class query {
             case "most_viewed" -> {
                 l.removeIf((m) -> m.getViews(db) == 0);
                 if (action.getSortType().equals("asc"))
-                    l.sort((m1, m2) -> m1.getViews(db) - m2.getViews(db));
+                    l.sort((m1, m2) -> {
+                        if (m1.getViews(db) - m2.getViews(db) == 0)
+                            return m1.getTitle().compareTo(m2.getTitle());
+                        return m1.getViews(db) - m2.getViews(db);
+                    });
                 else
-                    l.sort((m2, m1) -> m1.getViews(db) - m2.getViews(db));
+                    l.sort((m1, m2) -> {
+                        if (m2.getViews(db) - m1.getViews(db) == 0)
+                            return m2.getTitle().compareTo(m1.getTitle());
+                        return m2.getViews(db) - m1.getViews(db);
+                    });
 
             }
         }

@@ -35,20 +35,36 @@ public final class recommendation {
 
     public static String best_unseen(ActionInputData action, DB db) {
         Users user = db.getUser(action.getUsername());
+        Movies best_m = null;
+        Shows best_s = null;
 
         ArrayList<Movies> m = new ArrayList<>(db.getMovies());
-        m.sort((m1, m2) -> m1.getAverageRating().compareTo(m2.getAverageRating()));
+        m.sort((m2, m1) -> m1.getAverageRating().compareTo(m2.getAverageRating()));
         for (Movies movie : m) {
-            if (!user.getHistory().containsKey(movie.getTitle()))
-                return "BestRatedUnseenRecommendation result: " + movie.getTitle();
+            if (!user.getHistory().containsKey(movie.getTitle())) {
+                best_m = movie;
+                break;
+
+            }
         }
 
         ArrayList<Shows> s = new ArrayList<>(db.getShows());
-        s.sort((s1, s2) -> s1.getAverageRating().compareTo(s2.getAverageRating()));
+        s.sort((s2, s1) -> s1.getAverageRating().compareTo(s2.getAverageRating()));
         for (Shows show : s) {
-            if (!user.getHistory().containsKey(show.getTitle()))
-                return "BestRatedUnseenRecommendation result: " + show.getTitle();
+            if (!user.getHistory().containsKey(show.getTitle())) {
+                best_s = show;
+                break;
+            }
         }
+        if (best_m != null && best_s != null)
+            if (best_m.getAverageRating() >= best_s.getAverageRating())
+                return "BestRatedUnseenRecommendation result: " + best_m.getTitle();
+            else
+                return "BestRatedUnseenRecommendation result: " + best_s.getTitle();
+        if (best_s == null && best_m != null)
+            return "BestRatedUnseenRecommendation result: " + best_m.getTitle();
+        if (best_m == null && best_s != null)
+            return "BestRatedUnseenRecommendation result: " + best_s.getTitle();
 
         return "BestRatedUnseenRecommendation cannot be applied!";
     }
@@ -79,7 +95,7 @@ public final class recommendation {
         for (int i = 0; i < n - 1; i++)
             for (int j = i + 1; j < n; j++)
                 if (views[i] < views[j]) {
-                    Collections.swap(genres,i,j);
+                    Collections.swap(genres, i, j);
                     int aux = views[i];
                     views[i] = views[j];
                     views[j] = aux;
@@ -102,22 +118,39 @@ public final class recommendation {
 
     public static String favorite(ActionInputData action, DB db) {
         Users user = db.getUser(action.getUsername());
-
+        Movies best_m = null;
+        Shows best_s = null;
         ArrayList<Movies> m = new ArrayList<>(db.getMovies());
         m.removeIf((m1) -> m1.getNumberOfFavorites(db) == 0);
         m.sort((m1, m2) -> m2.getNumberOfFavorites(db) - m1.getNumberOfFavorites(db));
         for (Movies movie : m) {
-            if (!user.getHistory().containsKey(movie.getTitle()))
-                return "FavoriteRecommendation result: " + movie.getTitle();
+            if (!user.getHistory().containsKey(movie.getTitle())) {
+                best_m = movie;
+                break;
+            }
         }
 
         ArrayList<Shows> s = new ArrayList<>(db.getShows());
         s.removeIf((s1) -> s1.getNumberOfFavorites(db) == 0);
         s.sort((s1, s2) -> s2.getNumberOfFavorites(db) - s1.getNumberOfFavorites(db));
         for (Shows show : s) {
-            if (!user.getHistory().containsKey(show.getTitle()))
-                return "FavoriteRecommendation result: " + show.getTitle();
+            if (!user.getHistory().containsKey(show.getTitle())) {
+                best_s = show;
+                break;
+            }
         }
+
+        if (best_m != null && best_s != null)
+            if (best_m.getNumberOfFavorites(db) >= best_s.getNumberOfFavorites(db))
+                return "FavoriteRecommendation result: " + best_m.getTitle();
+            else
+                return "FavoriteRecommendation result: " + best_s.getTitle();
+        if (best_s == null && best_m != null)
+            return "FavoriteRecommendation result: " + best_m.getTitle();
+        if (best_m == null && best_s != null)
+            return "FavoriteRecommendation result: " + best_s.getTitle();
+
+
         return "FavoriteRecommendation cannot be applied!";
     }
 
@@ -145,6 +178,7 @@ public final class recommendation {
                 ArrayList<String>(m.stream().map(Movies::getTitle).collect(Collectors.toList()));
         results.addAll(new
                 ArrayList<String>(s.stream().map(Shows::getTitle).collect(Collectors.toList())));
+        results.sort(((o1, o2) -> o1.compareTo(o2)));
         if (!results.isEmpty())
             return "SearchRecommendation result: " + results;
 
